@@ -59,7 +59,7 @@ int main(int argc,char *argv[])
  /* concret, i en el cas de l’@IP, després de l’accept(), el S.O. haurà assignat una @IP */
  /* concreta de la màquina (la de la interfície d'entrada de la petició de connexió TCP).*/
  /* Aquí es fa bind amb @IP 10.0.0.3 (explícita) i #port TCP 3000 (explícita).           */
- strcpy(iploc,"192.168.0.21");
+ strcpy(iploc,"192.168.0.17");
  portloc = 3000;
 
  adrloc.sin_family=AF_INET;
@@ -110,7 +110,7 @@ int main(int argc,char *argv[])
  close(scon);
  exit(-1);
  }
- while (!(strIsEqual(buffer, "FI"))) {
+ while (!(strIsEqual(buffer, "FI\n"))) {
     if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
     {
     perror("Error en write");

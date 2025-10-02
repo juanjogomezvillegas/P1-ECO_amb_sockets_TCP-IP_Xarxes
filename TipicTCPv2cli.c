@@ -121,7 +121,7 @@ int main(int argc,char *argv[])
  close(scon);
  exit(-1);
  }
- while (!(strIsEqual(buffer, "FI"))) {
+ while (!(strIsEqual(buffer, "FI\n"))) {
     if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
     {
     perror("Error en write");
