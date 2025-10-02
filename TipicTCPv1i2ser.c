@@ -74,6 +74,9 @@ int main(int argc,char *argv[])
   exit(-1);
  }
  
+ for (;;)
+ {
+
  /* 3) Crida listen()                                                                    */
  /* Es crea una cua per emmagatzemar peticions de connexió pendents.                     */
  /* Un cop fet listen() es diu que sesc és un socket "d'escolta".                        */
@@ -142,6 +145,9 @@ int main(int argc,char *argv[])
   perror("Error en close");
   exit(-1);
  }
+
+ }
+
  if(close(sesc)==-1)
  {
   perror("Error en close");
