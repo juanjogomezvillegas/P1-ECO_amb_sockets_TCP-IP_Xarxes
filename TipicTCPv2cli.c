@@ -122,6 +122,18 @@ int main(int argc,char *argv[])
   close(scon);
   exit(-1);
  }
+ if((bytes_escrits=read(scon,buffer,bytes_escrits))==-1)
+ {
+  perror("Error en read ECO");
+  close(scon);
+  exit(-1);
+ }
+ if((bytes_escrits=write(0,buffer,bytes_escrits))==-1)
+ {
+  perror("Error en write ECO");
+  close(scon);
+  exit(-1);
+ }
 
  /* 5) Crida close()                                                                     */ 
  /* Es tanca el socket scon, que com que és un socket TCP, també vol dir que es tanca la */
