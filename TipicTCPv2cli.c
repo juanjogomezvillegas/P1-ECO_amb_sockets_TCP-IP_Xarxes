@@ -19,6 +19,16 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+void AskIpAddr(char* ip) {
+    printf("Entra l'@IP remota:\n");
+    scanf("%15s", ip);
+}
+
+void AskPort(int* port) {
+    printf("Entra el port remot:\n");
+    scanf("%d", port);
+}
+
 int main(int argc,char *argv[])
 {
  int scon, i;
@@ -76,9 +86,10 @@ int main(int argc,char *argv[])
  /* amb l’adreça del socket remot (@IP i #port TCP) i després es fa connect(). A més,    */
  /* com que abans no s’ha fet bind(), després de connect() el S.O. assignarà a scon una  */
  /* adreça (@IP i #port TCP; @IP de la interfície de sortida i un #port TCP lliure).     */
- /* L'adreca del socket remot és @IP 10.0.0.3 i #port TCP 3000.                          */ 
- strcpy(iprem,"192.168.0.21");
- portrem = 3000;
+ /* L'adreca del socket remot és @IP 10.0.0.3 i #port TCP 3000.                          */
+
+ AskIpAddr(iprem);
+ AskPort(&portrem);
 
  adrrem.sin_family=AF_INET;
  adrrem.sin_port=htons(portrem);
@@ -94,6 +105,8 @@ int main(int argc,char *argv[])
 
  /* Un cop fet connect() es diu que el socket scon està "connectat" al socket remot.     */
  /* Com que és un socket TCP això també vol dir que s'ha establert una connexió TCP.     */
+
+ printf("Entra frases (per desconnectar-te del servidor remot entra -1):\n");
 
  /* 4) Crida write()                                                                     */ 
  /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
