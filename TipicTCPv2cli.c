@@ -18,6 +18,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 void AskIpAddr(char* ip) {
     printf("Entra l'@IP remota:\n");
@@ -27,6 +28,10 @@ void AskIpAddr(char* ip) {
 void AskPort(int* port) {
     printf("Entra el port remot:\n");
     scanf("%d", port);
+}
+
+bool strIsEqual(char s1[], char s2[]) {
+	return strcmp(s1, s2) == 0;
 }
 
 int main(int argc,char *argv[])
@@ -106,18 +111,17 @@ int main(int argc,char *argv[])
  /* Un cop fet connect() es diu que el socket scon està "connectat" al socket remot.     */
  /* Com que és un socket TCP això també vol dir que s'ha establert una connexió TCP.     */
 
- printf("Entra frases (per desconnectar-te del servidor remot entra -1):\n");
+ printf("Entra frases (per desconnectar-te del servidor remot entra FI):\n");
 
- while (strcmp(buffer, "-1\n") != 0) {
-
-    /* 4) Crida write()                                                                     */ 
-    /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
-    if((bytes_llegits=read(0,buffer,200))==-1)
-    {
-    perror("Error en read");
-    close(scon);
-    exit(-1);
-    }
+ /* 4) Crida write()                                                                     */ 
+ /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
+ if((bytes_llegits=read(0,buffer,200))==-1) // lectura de la primera frase.
+ {
+ perror("Error en read");
+ close(scon);
+ exit(-1);
+ }
+ while (!(strIsEqual(buffer, "FI"))) {
     if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
     {
     perror("Error en write");
@@ -136,6 +140,15 @@ int main(int argc,char *argv[])
     close(scon);
     exit(-1);
     }
+
+    if((bytes_llegits=read(0,buffer,200))==-1) // lectura de la seguent frase.
+    {
+    perror("Error en read");
+    close(scon);
+    exit(-1);
+    }
+
+    buffer[bytes_escrits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
  }
 
  if((bytes_escrits=write(scon,buffer,bytes_escrits))==-1) // avisa al servidor de la desconnexió

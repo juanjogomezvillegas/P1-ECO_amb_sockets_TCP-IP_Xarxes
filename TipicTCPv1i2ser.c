@@ -18,6 +18,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdbool.h>
+
+bool strIsEqual(char s1[], char s2[]) {
+	return strcmp(s1, s2) == 0;
+}
 
 int main(int argc,char *argv[])
 {
@@ -97,17 +102,15 @@ int main(int argc,char *argv[])
  }
 
  /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
- 
- while (strcmp(buffer, "-1\n") != 0) {
-
-    /* 5) Crida read()                                                                      */
-    /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
-    if((bytes_llegits=read(scon,buffer,200))==-1)
-    {
-    perror("Error en read");
-    close(scon);
-    exit(-1);
-    }
+ /* 5) Crida read()                                                                      */
+ /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
+ if((bytes_llegits=read(scon,buffer,200))==-1) // rep la primera frase
+ {
+ perror("Error en read");
+ close(scon);
+ exit(-1);
+ }
+ while (!(strIsEqual(buffer, "FI"))) {
     if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
     {
     perror("Error en write");
@@ -121,6 +124,14 @@ int main(int argc,char *argv[])
     exit(-1);
     }
 
+    if((bytes_llegits=read(scon,buffer,200))==-1) // rep la seguent frase
+    {
+    perror("Error en read");
+    close(scon);
+    exit(-1);
+    }
+
+    buffer[bytes_escrits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
  }
 
  /* 6) Crida close()                                                                     */ 
