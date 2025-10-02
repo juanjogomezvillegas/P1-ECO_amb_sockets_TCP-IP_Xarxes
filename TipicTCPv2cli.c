@@ -56,7 +56,7 @@ int main(int argc,char *argv[])
  /*    #port TCP concret i una @IP concreta (la de la interfície de sortida de la        */
  /*    petició de connexió TCP).                                                         */
  /* Aquí es fa bind amb @IP 10.0.0.2 (explícita) i #port TCP 2000 (explícita).           */
- strcpy(iploc,"84.88.155.97");
+ /*strcpy(iploc,"0.0.0.0");
  portloc = 2000;
 
  adrloc.sin_family=AF_INET;
@@ -69,7 +69,7 @@ int main(int argc,char *argv[])
   perror("Error en bind");
   close(scon);
   exit(-1);
- }
+ }*/
  
  /* 3) Crida connect()                                                                   */
  /* Es connecta scon al socket del servidor (el socket “remot”). Primer s’omple adrrem   */
@@ -77,7 +77,7 @@ int main(int argc,char *argv[])
  /* com que abans no s’ha fet bind(), després de connect() el S.O. assignarà a scon una  */
  /* adreça (@IP i #port TCP; @IP de la interfície de sortida i un #port TCP lliure).     */
  /* L'adreca del socket remot és @IP 10.0.0.3 i #port TCP 3000.                          */ 
- strcpy(iprem,"84.88.155.97");
+ strcpy(iprem,"192.168.0.21");
  portrem = 3000;
 
  adrrem.sin_family=AF_INET;
@@ -85,7 +85,7 @@ int main(int argc,char *argv[])
  adrrem.sin_addr.s_addr= inet_addr(iprem);
  for(i=0;i<8;i++){adrrem.sin_zero[i]='\0';}
 
- if((connect(scon,(struct sockaddr*)&adrrem,sizeof(adrrem)))==-1)
+ if((connect(scon, (struct sockaddr*)&adrrem, sizeof(adrrem)))==-1)
  {
   perror("Error en connect");
   close(scon);

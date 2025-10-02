@@ -54,7 +54,7 @@ int main(int argc,char *argv[])
  /* concret, i en el cas de l’@IP, després de l’accept(), el S.O. haurà assignat una @IP */
  /* concreta de la màquina (la de la interfície d'entrada de la petició de connexió TCP).*/
  /* Aquí es fa bind amb @IP 10.0.0.3 (explícita) i #port TCP 3000 (explícita).           */
- strcpy(iploc,"84.88.155.97");
+ strcpy(iploc,"192.168.0.21");
  portloc = 3000;
 
  adrloc.sin_family=AF_INET;
@@ -62,7 +62,7 @@ int main(int argc,char *argv[])
  adrloc.sin_addr.s_addr=inet_addr(iploc);
  for(i=0;i<8;i++){adrloc.sin_zero[i]='\0';}
 
- if((bind(sesc,(struct sockaddr*)&adrloc,sizeof(adrloc)))==-1)
+ if((bind(sesc,(struct sockaddr*)&adrloc, sizeof(adrloc)))==-1)
  {
   perror("Error en bind");
   close(sesc);
