@@ -108,31 +108,35 @@ int main(int argc,char *argv[])
 
  printf("Entra frases (per desconnectar-te del servidor remot entra -1):\n");
 
- /* 4) Crida write()                                                                     */ 
- /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
- if((bytes_llegits=read(0,buffer,200))==-1)
- {
-  perror("Error en read");
-  close(scon);
-  exit(-1);
- }
- if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
- {
-  perror("Error en write");
-  close(scon);
-  exit(-1);
- }
- if((bytes_escrits=read(scon,buffer,bytes_escrits))==-1)
- {
-  perror("Error en read ECO");
-  close(scon);
-  exit(-1);
- }
- if((bytes_escrits=write(0,buffer,bytes_escrits))==-1)
- {
-  perror("Error en write ECO");
-  close(scon);
-  exit(-1);
+ for (;;) {
+
+    /* 4) Crida write()                                                                     */ 
+    /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
+    if((bytes_llegits=read(0,buffer,200))==-1)
+    {
+    perror("Error en read");
+    close(scon);
+    exit(-1);
+    }
+    if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
+    {
+    perror("Error en write");
+    close(scon);
+    exit(-1);
+    }
+    if((bytes_escrits=read(scon,buffer,bytes_escrits))==-1)
+    {
+    perror("Error en read ECO");
+    close(scon);
+    exit(-1);
+    }
+    if((bytes_escrits=write(0,buffer,bytes_escrits))==-1)
+    {
+    perror("Error en write ECO");
+    close(scon);
+    exit(-1);
+    }
+
  }
 
  /* 5) Crida close()                                                                     */ 

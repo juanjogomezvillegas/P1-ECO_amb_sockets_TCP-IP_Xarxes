@@ -98,25 +98,29 @@ int main(int argc,char *argv[])
 
  /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
  
- /* 5) Crida read()                                                                      */
- /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
- if((bytes_llegits=read(scon,buffer,200))==-1)
- {
-  perror("Error en read");
-  close(scon);
-  exit(-1);
- }
- if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
- {
-  perror("Error en write");
-  close(scon);
-  exit(-1);
- }
- if((bytes_escrits=write(scon,buffer,bytes_escrits))==-1)
- {
-  perror("Error en write ECO");
-  close(scon);
-  exit(-1);
+ for (;;) {
+
+    /* 5) Crida read()                                                                      */
+    /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
+    if((bytes_llegits=read(scon,buffer,200))==-1)
+    {
+    perror("Error en read");
+    close(scon);
+    exit(-1);
+    }
+    if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
+    {
+    perror("Error en write");
+    close(scon);
+    exit(-1);
+    }
+    if((bytes_escrits=write(scon,buffer,bytes_escrits))==-1)
+    {
+    perror("Error en write ECO");
+    close(scon);
+    exit(-1);
+    }
+
  }
 
  /* 6) Crida close()                                                                     */ 
