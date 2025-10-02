@@ -117,7 +117,7 @@ int main(int argc,char *argv[])
     close(scon);
     exit(-1);
     }
-    if((bytes_escrits=write(scon,buffer,bytes_escrits))==-1)
+    if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
     {
     perror("Error en write ECO");
     close(scon);
@@ -131,7 +131,7 @@ int main(int argc,char *argv[])
     exit(-1);
     }
 
-    buffer[bytes_escrits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
+    buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
  }
 
  /* 6) Crida close()                                                                     */ 

@@ -128,13 +128,13 @@ int main(int argc,char *argv[])
     close(scon);
     exit(-1);
     }
-    if((bytes_escrits=read(scon,buffer,bytes_escrits))==-1)
+    if((bytes_llegits=read(scon,buffer,bytes_llegits))==-1)
     {
     perror("Error en read ECO");
     close(scon);
     exit(-1);
     }
-    if((bytes_escrits=write(0,buffer,bytes_escrits))==-1)
+    if((bytes_escrits=write(0,buffer,bytes_llegits))==-1)
     {
     perror("Error en write ECO");
     close(scon);
@@ -148,10 +148,10 @@ int main(int argc,char *argv[])
     exit(-1);
     }
 
-    buffer[bytes_escrits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
+    buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
  }
 
- if((bytes_escrits=write(scon,buffer,bytes_escrits))==-1) // avisa al servidor de la desconnexió
+ if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1) // avisa al servidor de la desconnexió
  {
  perror("Error en write");
  close(scon);
