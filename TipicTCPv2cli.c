@@ -108,7 +108,7 @@ int main(int argc,char *argv[])
 
  printf("Entra frases (per desconnectar-te del servidor remot entra -1):\n");
 
- for (;;) {
+ while (strcmp(buffer, "-1\n") != 0) {
 
     /* 4) Crida write()                                                                     */ 
     /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
@@ -136,7 +136,13 @@ int main(int argc,char *argv[])
     close(scon);
     exit(-1);
     }
+ }
 
+ if((bytes_escrits=write(scon,buffer,bytes_escrits))==-1) // avisa al servidor de la desconnexió
+ {
+ perror("Error en write");
+ close(scon);
+ exit(-1);
  }
 
  /* 5) Crida close()                                                                     */ 

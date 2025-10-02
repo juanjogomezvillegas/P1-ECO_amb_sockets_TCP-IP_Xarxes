@@ -98,7 +98,7 @@ int main(int argc,char *argv[])
 
  /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
  
- for (;;) {
+ while (strcmp(buffer, "-1\n") != 0) {
 
     /* 5) Crida read()                                                                      */
     /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
