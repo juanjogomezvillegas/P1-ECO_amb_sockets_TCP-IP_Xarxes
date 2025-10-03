@@ -86,76 +86,81 @@ int main(int argc,char *argv[])
   exit(-1);
  }*/
  
- /* 3) Crida connect()                                                                   */
- /* Es connecta scon al socket del servidor (el socket “remot”). Primer s’omple adrrem   */
- /* amb l’adreça del socket remot (@IP i #port TCP) i després es fa connect(). A més,    */
- /* com que abans no s’ha fet bind(), després de connect() el S.O. assignarà a scon una  */
- /* adreça (@IP i #port TCP; @IP de la interfície de sortida i un #port TCP lliure).     */
- /* L'adreca del socket remot és @IP 10.0.0.3 i #port TCP 3000.                          */
+ while (!(strIsEqual(buffer, "n\n"))) {
 
- AskIpAddr(iprem);
- AskPort(&portrem);
+    /* 3) Crida connect()                                                                   */
+    /* Es connecta scon al socket del servidor (el socket “remot”). Primer s’omple adrrem   */
+    /* amb l’adreça del socket remot (@IP i #port TCP) i després es fa connect(). A més,    */
+    /* com que abans no s’ha fet bind(), després de connect() el S.O. assignarà a scon una  */
+    /* adreça (@IP i #port TCP; @IP de la interfície de sortida i un #port TCP lliure).     */
+    /* L'adreca del socket remot és @IP 10.0.0.3 i #port TCP 3000.                          */
 
- adrrem.sin_family=AF_INET;
- adrrem.sin_port=htons(portrem);
- adrrem.sin_addr.s_addr= inet_addr(iprem);
- for(i=0;i<8;i++){adrrem.sin_zero[i]='\0';}
+    AskIpAddr(iprem);
+    AskPort(&portrem);
 
- if((connect(scon, (struct sockaddr*)&adrrem, sizeof(adrrem)))==-1)
- {
-  perror("Error en connect");
-  close(scon);
-  exit(-1);
- }
+    adrrem.sin_family=AF_INET;
+    adrrem.sin_port=htons(portrem);
+    adrrem.sin_addr.s_addr= inet_addr(iprem);
+    for(i=0;i<8;i++){adrrem.sin_zero[i]='\0';}
 
- /* Un cop fet connect() es diu que el socket scon està "connectat" al socket remot.     */
- /* Com que és un socket TCP això també vol dir que s'ha establert una connexió TCP.     */
-
- printf("Entra frases (per desconnectar-te del servidor remot entra FI):\n");
-
- /* 4) Crida write()                                                                     */ 
- /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
- if((bytes_llegits=read(0,buffer,200))==-1) // lectura de la primera frase.
- {
- perror("Error en read");
- close(scon);
- exit(-1);
- }
- while (!(strIsEqual(buffer, "FI\n"))) {
-    if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
+    if((connect(scon, (struct sockaddr*)&adrrem, sizeof(adrrem)))==-1)
     {
-    perror("Error en write");
-    close(scon);
-    exit(-1);
-    }
-    if((bytes_llegits=read(scon,buffer,bytes_llegits))==-1)
-    {
-    perror("Error en read ECO");
-    close(scon);
-    exit(-1);
-    }
-    if((bytes_escrits=write(0,buffer,bytes_llegits))==-1)
-    {
-    perror("Error en write ECO");
+    perror("Error en connect");
     close(scon);
     exit(-1);
     }
 
-    if((bytes_llegits=read(0,buffer,200))==-1) // lectura de la seguent frase.
+    /* Un cop fet connect() es diu que el socket scon està "connectat" al socket remot.     */
+    /* Com que és un socket TCP això també vol dir que s'ha establert una connexió TCP.     */
+
+    printf("Entra frases (per desconnectar-te del servidor remot entra FI):\n");
+
+    /* 4) Crida write()                                                                     */ 
+    /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
+    while (!(strIsEqual(buffer, "FI\n"))) {
+        if((bytes_llegits=read(0,buffer,200))==-1) // lectura de la seguent frase.
+        {
+        perror("Error en read");
+        close(scon);
+        exit(-1);
+        }
+
+        buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
+
+        if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
+        {
+        perror("Error en write");
+        close(scon);
+        exit(-1);
+        }
+
+        if (!(strIsEqual(buffer, "FI\n"))) {
+            if((bytes_llegits=read(scon,buffer,bytes_llegits))==-1)
+            {
+            perror("Error en read ECO");
+            close(scon);
+            exit(-1);
+            }
+            if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
+            {
+            perror("Error en write ECO");
+            close(scon);
+            exit(-1);
+            }
+        }
+    }
+
+    // demana a l'usuari si vol continuar amb la situació inicial (tornar-se a connectar a un altre servidor).
+    printf("Vols tornar a connectar-te a un altre servidor (s|n)?\n");
+
+    if((bytes_llegits=read(0,buffer,200))==-1)
     {
     perror("Error en read");
     close(scon);
     exit(-1);
     }
 
-    buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
- }
-
- if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1) // avisa al servidor de la desconnexió
- {
- perror("Error en write");
- close(scon);
- exit(-1);
+    buffer[bytes_llegits] = '\0';
  }
 
  /* 5) Crida close()                                                                     */ 

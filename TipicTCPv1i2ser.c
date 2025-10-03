@@ -77,74 +77,70 @@ int main(int argc,char *argv[])
  for (;;)
  {
 
- /* 3) Crida listen()                                                                    */
- /* Es crea una cua per emmagatzemar peticions de connexió pendents.                     */
- /* Un cop fet listen() es diu que sesc és un socket "d'escolta".                        */
- if((listen(sesc,3))==-1)
- {
-  perror("Error en listen");
-  close(sesc);
-  exit(-1);
- }
-  
- /* 4) Crida accept()                                                                    */
- /* Ara espera una petició de connexió TCP d’un client, i un cop rebuda, l'accepta. El   */
- /* descriptor de socket retornat, scon, serà un nou identificador del socket local per  */
- /* a la connexió que s'acaba d'establir. Ambdós sockets tenen la mateixa adreça (@IP i  */
- /* #port TCP), però sesc és un socket “d’escolta” i scon és un socket "connectat". En   */
- /* aquest cas, però, com que sesc no tenia assignada una @IP concreta, sinó qualsevol,  */
- /* és a dir, totes les de la màquina (l'@IP 0.0.0.0), scon tindrà la “mateixa” @IP,     */
- /* però “concretada” a una d’elles (el S.O. li assignarà l’@IP que hagi fet servir el   */
- /* client en la petició de connexió).                                                   */
- long_adrrem=sizeof(adrrem);
- if((scon=accept(sesc,(struct sockaddr*)&adrrem, &long_adrrem))==-1)
- {
-  perror("Error en accept");
-  close(sesc);
-  exit(-1);
- }
+   /* 3) Crida listen()                                                                    */
+   /* Es crea una cua per emmagatzemar peticions de connexió pendents.                     */
+   /* Un cop fet listen() es diu que sesc és un socket "d'escolta".                        */
+   if((listen(sesc,3))==-1)
+   {
+   perror("Error en listen");
+   close(sesc);
+   exit(-1);
+   }
+   
+   /* 4) Crida accept()                                                                    */
+   /* Ara espera una petició de connexió TCP d’un client, i un cop rebuda, l'accepta. El   */
+   /* descriptor de socket retornat, scon, serà un nou identificador del socket local per  */
+   /* a la connexió que s'acaba d'establir. Ambdós sockets tenen la mateixa adreça (@IP i  */
+   /* #port TCP), però sesc és un socket “d’escolta” i scon és un socket "connectat". En   */
+   /* aquest cas, però, com que sesc no tenia assignada una @IP concreta, sinó qualsevol,  */
+   /* és a dir, totes les de la màquina (l'@IP 0.0.0.0), scon tindrà la “mateixa” @IP,     */
+   /* però “concretada” a una d’elles (el S.O. li assignarà l’@IP que hagi fet servir el   */
+   /* client en la petició de connexió).                                                   */
+   long_adrrem=sizeof(adrrem);
+   if((scon=accept(sesc,(struct sockaddr*)&adrrem, &long_adrrem))==-1)
+   {
+   perror("Error en accept");
+   close(sesc);
+   exit(-1);
+   }
 
- /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
- /* 5) Crida read()                                                                      */
- /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
- if((bytes_llegits=read(scon,buffer,200))==-1) // rep la primera frase
- {
- perror("Error en read");
- close(scon);
- exit(-1);
- }
- while (!(strIsEqual(buffer, "FI\n"))) {
-    if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
-    {
-    perror("Error en write");
-    close(scon);
-    exit(-1);
-    }
-    if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
-    {
-    perror("Error en write ECO");
-    close(scon);
-    exit(-1);
-    }
+   /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
+   /* 5) Crida read()                                                                      */
+   /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
+   while (!(strIsEqual(buffer, "FI\n"))) {
+      if((bytes_llegits=read(scon,buffer,200))==-1) // rep la seguent frase
+      {
+      perror("Error en read");
+      close(scon);
+      exit(-1);
+      }
 
-    if((bytes_llegits=read(scon,buffer,200))==-1) // rep la seguent frase
-    {
-    perror("Error en read");
-    close(scon);
-    exit(-1);
-    }
+      buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
 
-    buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
- }
+      if (!(strIsEqual(buffer, "FI\n"))) {
+         if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
+         {
+         perror("Error en write");
+         close(scon);
+         exit(-1);
+         }
+         if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
+         {
+         perror("Error en write ECO");
+         close(scon);
+         exit(-1);
+         }
+      }
+   }
 
- /* 6) Crida close()                                                                     */ 
- /* Es tanca el socket scon, que com que és un socket TCP, també vol dir que es tanca la */
- /* connexió TCP establerta, i es tanca el socket d'escolta sesc.                        */
- if(close(scon)==-1)
- {
-  perror("Error en close");
-  exit(-1);
- }
+   /* 6) Crida close()                                                                     */ 
+   /* Es tanca el socket scon, que com que és un socket TCP, també vol dir que es tanca la */
+   /* connexió TCP establerta, i es tanca el socket d'escolta sesc.                        */
+   if(close(scon)==-1)
+   {
+   perror("Error en close");
+   exit(-1);
+   }
 
  }
 
