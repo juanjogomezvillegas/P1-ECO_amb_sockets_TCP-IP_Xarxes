@@ -53,7 +53,7 @@
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 {
-    return crearSocket(IPloc, portTCPloc);
+    return crearSocket(&IPloc, &portTCPloc);
 }
 
 /* Crea un socket TCP “servidor” (o en estat d’escolta – listen –) a      */
@@ -71,11 +71,15 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 {
 	int sesc = crearSocket(IPloc, portTCPloc);
 
-    if((listen(sesc,3))==-1) {
-        close(sesc);
+    if (sesc == -1) {
         return -1;
     } else {
-        return sesc;
+        if ((listen(sesc,3))==-1) {
+            close(sesc);
+            return -1;
+        } else {
+            return sesc;
+        }
     }
 }
 
@@ -94,7 +98,7 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 /* -1 si hi ha error.                                                     */
 int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 {
-	//
+    //
 }
 
 /* El socket TCP “servidor” d’identificador “Sck” accepta fer una         */
@@ -115,7 +119,20 @@ int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 /* -1 si hi ha error.                                                     */
 int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 {
-	//
+	int i, long_adrrem, scon;
+    struct sockaddr_in adrrem;
+    adrrem.sin_family=AF_INET;
+    adrrem.sin_port=htons(portTCPrem);
+    adrrem.sin_addr.s_addr=inet_addr(IPrem);
+    for(i=0;i<8;i++){adrrem.sin_zero[i]='\0';}
+
+	long_adrrem=sizeof(adrrem);
+    if ((scon=accept(Sck,(struct sockaddr*)&adrrem, &long_adrrem))==-1) {
+        close(Sck);
+        exit(-1);
+    } else {
+        return scon;
+    }
 }
 
 /* Envia a través del socket TCP “connectat” d’identificador “Sck” la     */
@@ -130,7 +147,12 @@ int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 /* -1 si hi ha error.                                                     */
 int TCP_Envia(int Sck, const char *SeqBytes, int LongSeqBytes)
 {
-	//
+    int bytes_enviats;
+	if ((bytes_enviats=write(Sck, SeqBytes, LongSeqBytes)) == -1) {
+        return -1;
+    } else {
+        return bytes_enviats;
+    }
 }
 
 /* Rep a través del socket TCP “connectat” d’identificador “Sck” una      */
@@ -147,7 +169,16 @@ int TCP_Envia(int Sck, const char *SeqBytes, int LongSeqBytes)
 /* -1 si hi ha error.                                                     */
 int TCP_Rep(int Sck, char *SeqBytes, int LongSeqBytes)
 {
-	//
+	int bytes_rebuts;
+	if ((bytes_rebuts=read(Sck, SeqBytes, LongSeqBytes)) == -1) {
+        return -1;
+    } else {
+        if (bytes_rebuts == 0) {
+            return 0;
+        } else {
+            return bytes_rebuts;
+        }
+    }
 }
 
 /* S’allibera (s’esborra) el socket TCP d’identificador “Sck”; si “Sck”   */
