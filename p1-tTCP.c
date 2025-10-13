@@ -129,7 +129,7 @@ int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 	long_adrrem=sizeof(adrrem);
     if ((scon=accept(Sck,(struct sockaddr*)&adrrem, &long_adrrem))==-1) {
         close(Sck);
-        exit(-1);
+        return -1;
     } else {
         return scon;
     }
