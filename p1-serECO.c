@@ -25,6 +25,7 @@
 
 /* int FuncioInterna(arg1, arg2...);                                      */
 bool strIsEqual(char s1[], char s2[]);
+char* printError(int* codiRes);
 
 int main(int argc,char *argv[])
 {
@@ -37,17 +38,25 @@ int main(int argc,char *argv[])
 
     /* Expressions, estructures de control, crides a funcions, etc.          */
     if ((sesc = TCP_CreaSockServidor(iploc, portloc)) == -1) {
+        TCP_TancaSock(sesc);
+        printf(printError(-1));
         exit(-1);
     }
 
     for (;;) {
         if ((scon = TCP_AcceptaConnexio(sesc, iploc, portloc)) == -1) {
+            TCP_TancaSock(sesc);
+            TCP_TancaSock(scon);
+            printf(printError(-1));
             exit(-1);
         }
 
         while (!(strIsEqual(buffer, "FI\n"))) {
             if ((bytes_llegits=TCP_Rep(scon, buffer, 200)) == -1) {
+                TCP_TancaSock(sesc);
+                TCP_TancaSock(scon);
                 perror("Error en read");
+                printf(printError(-1));
                 exit(-1);
             }
 
@@ -55,11 +64,17 @@ int main(int argc,char *argv[])
             
             if (!(strIsEqual(buffer, "FI\n"))) {
                 if ((bytes_escrits = write(1, buffer, bytes_llegits)) == -1) {
+                    TCP_TancaSock(sesc);
+                    TCP_TancaSock(scon);
                     perror("Error en write");
+                    printf(printError(-1));
                     exit(-1);
                 }
                 if ((bytes_escrits = TCP_Envia(scon, buffer, bytes_llegits)) == -1) {
+                    TCP_TancaSock(sesc);
+                    TCP_TancaSock(scon);
                     perror("Error en write ECO");
+                    printf(printError(-1));
                     exit(-1);
                 }                
             }
@@ -67,6 +82,7 @@ int main(int argc,char *argv[])
     }
 
     if (TCP_TancaSock(sesc) == -1) {
+        printf(printError(-1));
         exit(-1);
     }
 
@@ -84,4 +100,8 @@ int main(int argc,char *argv[])
 } */
 bool strIsEqual(char s1[], char s2[]) {
 	return strcmp(s1, s2) == 0;
+}
+
+char* printError(int* codiRes) {
+    return "Error: %s\n", T_ObteTextRes(&codiRes);
 }

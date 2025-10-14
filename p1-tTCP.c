@@ -75,7 +75,6 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
         return -1;
     } else {
         if ((listen(sesc,3))==-1) {
-            close(sesc);
             return -1;
         } else {
             return sesc;
@@ -128,7 +127,6 @@ int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 
 	long_adrrem=sizeof(adrrem);
     if ((scon=accept(Sck,(struct sockaddr*)&adrrem, &long_adrrem))==-1) {
-        close(Sck);
         return -1;
     } else {
         return scon;
