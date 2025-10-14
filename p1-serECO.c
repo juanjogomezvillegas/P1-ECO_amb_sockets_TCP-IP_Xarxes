@@ -37,14 +37,14 @@ int main(int argc,char *argv[])
     int portloc = 3000;
 
     /* Expressions, estructures de control, crides a funcions, etc.          */
-    if ((sesc = TCP_CreaSockServidor(iploc, portloc)) == -1) {
+    if ((sesc = TCP_CreaSockServidor(iploc, &portloc)) == -1) {
         TCP_TancaSock(sesc);
         printf(printError(-1));
         exit(-1);
     }
 
     for (;;) {
-        if ((scon = TCP_AcceptaConnexio(sesc, iploc, portloc)) == -1) {
+        if ((scon = TCP_AcceptaConnexio(sesc, iploc, &portloc)) == -1) {
             TCP_TancaSock(sesc);
             TCP_TancaSock(scon);
             printf(printError(-1));

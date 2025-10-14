@@ -69,9 +69,9 @@ int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 {
-	int sesc = crearSocket(IPloc, portTCPloc);
+	int sesc;
 
-    if (sesc == -1) {
+    if ((sesc = crearSocket(&IPloc, &portTCPloc)) == -1) {
         return -1;
     } else {
         if ((listen(sesc,3))==-1) {
