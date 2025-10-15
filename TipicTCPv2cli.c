@@ -71,8 +71,8 @@ int main(int argc,char *argv[])
  /*    #port TCP concret i una @IP concreta (la de la interfície de sortida de la        */
  /*    petició de connexió TCP).                                                         */
  /* Aquí es fa bind amb @IP 10.0.0.2 (explícita) i #port TCP 2000 (explícita).           */
- /*strcpy(iploc,"0.0.0.0");
- portloc = 2000;
+ strcpy(iploc,"0.0.0.0");
+ portloc = 0;
 
  adrloc.sin_family=AF_INET;
  adrloc.sin_port=htons(portloc);
@@ -84,7 +84,7 @@ int main(int argc,char *argv[])
   perror("Error en bind");
   close(scon);
   exit(-1);
- }*/
+ }
  
  while (!(strIsEqual(buffer, "n\n"))) {
 
@@ -110,10 +110,13 @@ int main(int argc,char *argv[])
     exit(-1);
     }
 
+    printf("\nSocket local: IP=%s;Port=%d", inet_ntoa(adrloc.sin_addr), ntohs(adrloc.sin_port));
+    printf("\nSocket remot: IP=%s;Port=%d\n", inet_ntoa(adrrem.sin_addr), ntohs(adrrem.sin_port));
+
     /* Un cop fet connect() es diu que el socket scon està "connectat" al socket remot.     */
     /* Com que és un socket TCP això també vol dir que s'ha establert una connexió TCP.     */
 
-    printf("Entra frases (per desconnectar-te del servidor remot entra FI):\n");
+    printf("\nEntra frases (per desconnectar-te del servidor remot entra FI):\n");
 
     /* 4) Crida write()                                                                     */ 
     /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
@@ -155,11 +158,12 @@ int main(int argc,char *argv[])
     }
 
     // demana a l'usuari si vol continuar amb la situació inicial (tornar-se a connectar a un altre servidor).
-    printf("Vols tornar a connectar-te a un altre servidor (s|n)?\n");
+    printf("\nVols tornar a connectar-te a un altre servidor (s|n)?\n");
 
     if((bytes_llegits=read(0,buffer,200))==-1)
     {
     perror("Error en read");
+    close(scon);
     exit(-1);
     }
 
@@ -169,11 +173,11 @@ int main(int argc,char *argv[])
  /* 5) Crida close()                                                                     */ 
  /* Es tanca el socket scon, que com que és un socket TCP, també vol dir que es tanca la */
  /* connexió TCP establerta.                                                             */
- if(close(scon)==-1)
+ /*if(close(scon)==-1)
  {
   perror("Error en close");
   exit(-1);
- }
+ }*/
 
  exit(0);
 }

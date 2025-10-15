@@ -108,11 +108,15 @@ int main(int argc,char *argv[])
    exit(-1);
    }
 
+   printf("\nSocket local: IP=%s;Port=%d", inet_ntoa(adrloc.sin_addr), ntohs(adrloc.sin_port));
+   printf("\nSocket remot: IP=%s;Port=%d\n", inet_ntoa(adrrem.sin_addr), ntohs(adrrem.sin_port));
+
    /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
    /* 5) Crida read()                                                                      */
    /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
    bytes_llegits = 1;
    while (bytes_llegits > 0) {
+      printf("\n");
       if((bytes_llegits=read(scon,buffer,200))==-1) // rep la seguent frase
       {
       perror("Error en read");
