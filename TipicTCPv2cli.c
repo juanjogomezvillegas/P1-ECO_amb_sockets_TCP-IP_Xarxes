@@ -134,6 +134,8 @@ int main(int argc,char *argv[])
         exit(-1);
         }
 
+        printf("bytes enviats: %d\n", bytes_escrits);
+
         if (!(strIsEqual(buffer, "FI\n"))) {
             if((bytes_llegits=read(scon,buffer,bytes_llegits))==-1)
             {

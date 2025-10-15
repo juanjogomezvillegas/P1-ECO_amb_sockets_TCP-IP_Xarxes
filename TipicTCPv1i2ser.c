@@ -24,6 +24,11 @@ bool strIsEqual(char s1[], char s2[]) {
 	return strcmp(s1, s2) == 0;
 }
 
+void AskPort(int* port) {
+    printf("Entra el port local:\n");
+    scanf("%d", port);
+}
+
 int main(int argc,char *argv[])
 {
  int sesc, scon, i;
@@ -59,8 +64,8 @@ int main(int argc,char *argv[])
  /* concret, i en el cas de l’@IP, després de l’accept(), el S.O. haurà assignat una @IP */
  /* concreta de la màquina (la de la interfície d'entrada de la petició de connexió TCP).*/
  /* Aquí es fa bind amb @IP 10.0.0.3 (explícita) i #port TCP 3000 (explícita).           */
- strcpy(iploc,"192.168.0.17");
- portloc = 3000;
+ strcpy(iploc,"0.0.0.0");
+ AskPort(&portloc);
 
  adrloc.sin_family=AF_INET;
  adrloc.sin_port=htons(portloc);
@@ -76,7 +81,6 @@ int main(int argc,char *argv[])
  
  for (;;)
  {
-
    /* 3) Crida listen()                                                                    */
    /* Es crea una cua per emmagatzemar peticions de connexió pendents.                     */
    /* Un cop fet listen() es diu que sesc és un socket "d'escolta".                        */
@@ -115,6 +119,8 @@ int main(int argc,char *argv[])
       exit(-1);
       }
 
+      printf("bytes rebuts: %d\n", bytes_llegits);
+
       buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
 
       if (!(strIsEqual(buffer, "FI\n"))) {
@@ -140,6 +146,8 @@ int main(int argc,char *argv[])
    {
    perror("Error en close");
    exit(-1);
+   } else {
+      printf("C desconnectat\n");
    }
 
  }
