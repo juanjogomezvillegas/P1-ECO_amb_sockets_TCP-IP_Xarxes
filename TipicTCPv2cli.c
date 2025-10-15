@@ -127,16 +127,16 @@ int main(int argc,char *argv[])
 
         buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
 
-        if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
-        {
-        perror("Error en write");
-        close(scon);
-        exit(-1);
-        }
-
-        printf("bytes enviats: %d\n", bytes_escrits);
-
         if (!(strIsEqual(buffer, "FI\n"))) {
+            if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
+            {
+            perror("Error en write");
+            close(scon);
+            exit(-1);
+            }
+
+            printf("bytes enviats: %d\n", bytes_escrits);
+            
             if((bytes_llegits=read(scon,buffer,bytes_llegits))==-1)
             {
             perror("Error en read ECO");
@@ -149,6 +149,8 @@ int main(int argc,char *argv[])
             close(scon);
             exit(-1);
             }
+        } else {
+            close(scon);
         }
     }
 
@@ -158,7 +160,6 @@ int main(int argc,char *argv[])
     if((bytes_llegits=read(0,buffer,200))==-1)
     {
     perror("Error en read");
-    close(scon);
     exit(-1);
     }
 

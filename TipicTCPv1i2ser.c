@@ -78,19 +78,19 @@ int main(int argc,char *argv[])
   close(sesc);
   exit(-1);
  }
+
+ /* 3) Crida listen()                                                                    */
+ /* Es crea una cua per emmagatzemar peticions de connexió pendents.                     */
+ /* Un cop fet listen() es diu que sesc és un socket "d'escolta".                        */
+ if((listen(sesc,3))==-1)
+ {
+ perror("Error en listen");
+ close(sesc);
+ exit(-1);
+ }
  
  for (;;)
  {
-   /* 3) Crida listen()                                                                    */
-   /* Es crea una cua per emmagatzemar peticions de connexió pendents.                     */
-   /* Un cop fet listen() es diu que sesc és un socket "d'escolta".                        */
-   if((listen(sesc,3))==-1)
-   {
-   perror("Error en listen");
-   close(sesc);
-   exit(-1);
-   }
-   
    /* 4) Crida accept()                                                                    */
    /* Ara espera una petició de connexió TCP d’un client, i un cop rebuda, l'accepta. El   */
    /* descriptor de socket retornat, scon, serà un nou identificador del socket local per  */
@@ -111,7 +111,8 @@ int main(int argc,char *argv[])
    /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
    /* 5) Crida read()                                                                      */
    /* S'escriu a pantalla el que arriba pel socket connectat scon                          */
-   while (!(strIsEqual(buffer, "FI\n"))) {
+   bytes_llegits = 1;
+   while (bytes_llegits > 0) {
       if((bytes_llegits=read(scon,buffer,200))==-1) // rep la seguent frase
       {
       perror("Error en read");
@@ -119,11 +120,10 @@ int main(int argc,char *argv[])
       exit(-1);
       }
 
-      printf("bytes rebuts: %d\n", bytes_llegits);
+      if (bytes_llegits > 0) {
+         printf("bytes rebuts: %d\n", bytes_llegits);
 
-      buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
-
-      if (!(strIsEqual(buffer, "FI\n"))) {
+         
          if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
          {
          perror("Error en write");
@@ -136,6 +136,8 @@ int main(int argc,char *argv[])
          close(scon);
          exit(-1);
          }
+      } else {
+         printf("C desconnectat\n");
       }
    }
 
@@ -146,10 +148,7 @@ int main(int argc,char *argv[])
    {
    perror("Error en close");
    exit(-1);
-   } else {
-      printf("C desconnectat\n");
    }
-
  }
 
  if(close(sesc)==-1)
