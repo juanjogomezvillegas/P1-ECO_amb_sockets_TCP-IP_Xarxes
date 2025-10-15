@@ -124,16 +124,16 @@ int main(int argc,char *argv[])
       exit(-1);
       }
 
-      if (bytes_llegits > 0) {
-         printf("bytes rebuts: %d\n", bytes_llegits);
-
-         
+      if (bytes_llegits > 0) {         
          if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
          {
          perror("Error en write");
          close(scon);
          exit(-1);
          }
+
+         printf("bytes rebuts: %d\n", bytes_llegits);
+         
          if((bytes_escrits=write(scon,buffer,bytes_llegits))==-1)
          {
          perror("Error en write ECO");

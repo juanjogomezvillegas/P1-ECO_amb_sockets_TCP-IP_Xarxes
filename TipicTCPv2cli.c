@@ -42,6 +42,7 @@ int main(int argc,char *argv[])
  struct sockaddr_in adrloc, adrrem;
  char iploc[16], iprem[16];
  int portloc, portrem;
+ bool errorS;
  
  /* 1) Crida socket()                                                                    */
  /* Es crea el socket TCP scon del client (el socket "local"), que de moment no té       */
@@ -120,7 +121,8 @@ int main(int argc,char *argv[])
 
     /* 4) Crida write()                                                                     */ 
     /* S'envia pel socket connectat scon el que es llegeix del teclat                       */
-    while (!(strIsEqual(buffer, "FI\n"))) {
+    errorS = false;
+    while (!(strIsEqual(buffer, "FI\n")) && !(errorS)) {
         if((bytes_llegits=read(0,buffer,200))==-1) // lectura de la seguent frase.
         {
         perror("Error en read");
@@ -145,7 +147,12 @@ int main(int argc,char *argv[])
             perror("Error en read ECO");
             close(scon);
             exit(-1);
+            } else if (bytes_llegits == 0) {
+                errorS = true;
+                close(scon);
+                perror("S desconnectat");
             }
+
             if((bytes_escrits=write(1,buffer,bytes_llegits))==-1)
             {
             perror("Error en write ECO");
@@ -163,7 +170,6 @@ int main(int argc,char *argv[])
     if((bytes_llegits=read(0,buffer,200))==-1)
     {
     perror("Error en read");
-    close(scon);
     exit(-1);
     }
 
