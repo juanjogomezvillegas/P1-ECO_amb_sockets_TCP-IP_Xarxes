@@ -1,12 +1,13 @@
-/**************************************************************************/
-/*                                                                        */
-/* L'aplicació ECO amb sockets TCP/IP                                     */
-/* Fitxer capçalera de tTCP.c                                             */
-/*                                                                        */
-/* Autors:                                                                */
-/* Data:                                                                  */
-/*                                                                        */
-/**************************************************************************/
+/*******************************************************************************/
+/*                                                                             */
+/* L'aplicació ECO amb sockets TCP/IP                                          */
+/* Fitxer capçalera de tTCP.c                                                  */
+/*                                                                             */
+/* Autors: Juan José Gómez Villegas, u1987338, u1987338@campus.udg.edu, GEINF  */
+/*         Martí Valverde Rodríguez, u1994928, u1994928@campus.udg.edu, GEINF  */
+/* Data: 08 d'octubre de 2025                                                  */
+/*                                                                             */
+/*******************************************************************************/
 
 /* Declaració de funcions EXTERNES de tTCP.c, és a dir, d'aquelles        */
 /* funcions que es faran servir en un altre fitxer extern a tTCP.c,       */
@@ -27,5 +28,3 @@ int TCP_TancaSock(int Sck);
 int TCP_TrobaAdrSockLoc(int Sck, char *IPloc, int *portTCPloc);
 int TCP_TrobaAdrSockRem(int Sck, char *IPrem, int *portTCPrem);
 char* T_ObteTextRes(int *CodiRes);
-
-/* int TCP_FuncioExterna(arg1, arg2...);                                  */

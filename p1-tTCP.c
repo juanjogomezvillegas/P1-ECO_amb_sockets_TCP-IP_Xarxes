@@ -1,15 +1,16 @@
-/**************************************************************************/
-/*                                                                        */
-/* L'aplicació ECO amb sockets TCP/IP                                     */
-/* Fitxer tTCP.c que "implementa" la capa de transport TCP, o més         */
-/* ben dit, que encapsula les funcions de la interfície de sockets        */
-/* TCP, en unes altres funcions més simples i entenedores: la "nova"      */
-/* interfície de sockets TCP.                                             */
-/*                                                                        */
-/* Autors:                                                                */
-/* Data:                                                                  */
-/*                                                                        */
-/**************************************************************************/
+/*******************************************************************************/
+/*                                                                             */
+/* L'aplicació ECO amb sockets TCP/IP                                          */
+/* Fitxer tTCP.c que "implementa" la capa de transport TCP, o més              */
+/* ben dit, que encapsula les funcions de la interfície de sockets             */
+/* TCP, en unes altres funcions més simples i entenedores: la "nova"           */
+/* interfície de sockets TCP.                                                  */
+/*                                                                             */
+/* Autors: Juan José Gómez Villegas, u1987338, u1987338@campus.udg.edu, GEINF  */
+/*         Martí Valverde Rodríguez, u1994928, u1994928@campus.udg.edu, GEINF  */ 
+/* Data: 08 d'octubre de 2025                                                  */
+/*                                                                             */
+/*******************************************************************************/
 
 /* Inclusió de llibreries, p.e. #include <sys/types.h> o #include "meu.h" */
 /*  (si les funcions externes es cridessin entre elles, faria falta fer   */
@@ -32,8 +33,8 @@
 /* Declaració de funcions INTERNES que es fan servir en aquest fitxer     */
 /* (les  definicions d'aquestes funcions es troben més avall) per així    */
 /* fer-les conegudes des d'aquí fins al final d'aquest fitxer, p.e.,      */
-
-/* int FuncioInterna(arg1, arg2...);                                      */
+struct sockaddr_in crearsockaddr(const char *IPloc, int portTCPloc);
+int crearSocket(const char *IPloc, int portTCPloc);
 
 /* Definició de funcions EXTERNES, és a dir, d'aquelles que es cridaran   */
 /* des d'altres fitxers, p.e., int TCP_FuncioExterna(arg1, arg2...) { }   */
@@ -53,7 +54,7 @@
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 {
-    return crearSocket(&IPloc, &portTCPloc);
+    return crearSocket(IPloc, &portTCPloc);
 }
 
 /* Crea un socket TCP “servidor” (o en estat d’escolta – listen –) a      */
@@ -69,15 +70,15 @@ int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 {
-	int sesc;
+	int sock;
 
-    if ((sesc = crearSocket(&IPloc, &portTCPloc)) == -1) {
+    if ((sock = crearSocket(IPloc, &portTCPloc)) == -1) {
         return -1;
     } else {
-        if ((listen(sesc,3))==-1) {
+        if ((listen(sock,3))==-1) {
             return -1;
         } else {
-            return sesc;
+            return sock;
         }
     }
 }
@@ -97,7 +98,13 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 /* -1 si hi ha error.                                                     */
 int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 {
-    //
+    struct sockaddr_in adrrem = crearsockaddr(IPrem, portTCPrem);
+    
+    if (connect(Sck, (struct sockaddr*)&adrrem, sizeof(adrrem)) == -1) {
+        return -1;
+    }
+    
+    return 0;
 }
 
 /* El socket TCP “servidor” d’identificador “Sck” accepta fer una         */
@@ -118,19 +125,14 @@ int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 /* -1 si hi ha error.                                                     */
 int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 {
-	int i, long_adrrem, scon;
-    struct sockaddr_in adrrem;
-    adrrem.sin_family=AF_INET;
-    adrrem.sin_port=htons(portTCPrem);
-    adrrem.sin_addr.s_addr=inet_addr(IPrem);
-    for(i=0;i<8;i++){adrrem.sin_zero[i]='\0';}
+	int i, scon;
+    struct sockaddr_in adrrem = crearsockaddr(IPrem, portTCPrem);
 
-	long_adrrem=sizeof(adrrem);
-    if ((scon=accept(Sck,(struct sockaddr*)&adrrem, &long_adrrem))==-1) {
+    if ((scon=accept(Sck,(struct sockaddr*)&adrrem, sizeof(adrrem)))==-1) {
         return -1;
-    } else {
-        return scon;
     }
+    
+    return scon;
 }
 
 /* Envia a través del socket TCP “connectat” d’identificador “Sck” la     */
@@ -146,11 +148,12 @@ int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 int TCP_Envia(int Sck, const char *SeqBytes, int LongSeqBytes)
 {
     int bytes_enviats;
+
 	if ((bytes_enviats=write(Sck, SeqBytes, LongSeqBytes)) == -1) {
         return -1;
-    } else {
-        return bytes_enviats;
     }
+    
+    return bytes_enviats;
 }
 
 /* Rep a través del socket TCP “connectat” d’identificador “Sck” una      */
@@ -168,15 +171,16 @@ int TCP_Envia(int Sck, const char *SeqBytes, int LongSeqBytes)
 int TCP_Rep(int Sck, char *SeqBytes, int LongSeqBytes)
 {
 	int bytes_rebuts;
+
 	if ((bytes_rebuts=read(Sck, SeqBytes, LongSeqBytes)) == -1) {
         return -1;
-    } else {
-        if (bytes_rebuts == 0) {
-            return 0;
-        } else {
-            return bytes_rebuts;
-        }
     }
+    
+    if (bytes_rebuts == 0) {
+        return 0;
+    }
+    
+    return bytes_rebuts;
 }
 
 /* S’allibera (s’esborra) el socket TCP d’identificador “Sck”; si “Sck”   */
@@ -206,7 +210,16 @@ int TCP_TancaSock(int Sck)
 /* -1 si hi ha error.                                                     */
 int TCP_TrobaAdrSockLoc(int Sck, char *IPloc, int *portTCPloc)
 {
-	//
+    struct sockaddr_in adrloc;
+    
+    if (getsockname(Sck, (struct sockaddr*)&adrloc, sizeof(adrloc)) == -1) {
+        return -1;
+    }
+
+    IPloc = inet_ntoa(adrloc.sin_addr);
+    portTCPloc = ntohs(adrloc.sin_port);
+
+    return 0;
 }
 
 /* Donat el socket TCP “connectat” d’identificador “Sck”, troba l’adreça  */
@@ -221,7 +234,16 @@ int TCP_TrobaAdrSockLoc(int Sck, char *IPloc, int *portTCPloc)
 /* -1 si hi ha error.                                                     */
 int TCP_TrobaAdrSockRem(int Sck, char *IPrem, int *portTCPrem)
 {
-	//
+	struct sockaddr_in adrrem;
+    
+    if (getpeername(Sck, (struct sockaddr*)&adrrem, sizeof(adrrem)) == -1) {
+        return -1;
+    }
+
+    IPrem = inet_ntoa(adrrem.sin_addr);
+    portTCPrem = ntohs(adrrem.sin_port);
+
+    return 0;
 }
 
 /* Obté un missatge de text de l'S.O. que descriu l'error produït en      */
@@ -239,38 +261,35 @@ char* T_ObteTextRes(int *CodiRes)
 
 /* Si ho creieu convenient, feu altres funcions EXTERNES                  */
 
-/* Descripció de la funció, dels arguments, valors de retorn, etc.        */
-/* int TCP_FuncioExterna(arg1, arg2...)
-{
-	
-} */
-
 /* Definició de funcions INTERNES, és a dir, d'aquelles que es faran      */
 /* servir només en aquest mateix fitxer. Les seves declaracions es troben */
 /* a l'inici d'aquest fitxer.                                             */
 
 /* Descripció de la funció, dels arguments, valors de retorn, etc.        */
-/* int FuncioInterna(arg1, arg2...)
-{
-	
-} */
+struct sockaddr_in crearsockaddr(const char *IPloc, int portTCPloc) {
+    int i;
+    struct sockaddr_in addr;
+    addr.sin_family=AF_INET;
+    addr.sin_port=htons(portTCPloc);
+    addr.sin_addr.s_addr=inet_addr(IPloc);
+    for(i=0;i<8;i++){addr.sin_zero[i]='\0';}
+
+    return addr;
+}
+
 int crearSocket(const char *IPloc, int portTCPloc) {
-    int scon, i;
+    int sock, i;
     struct sockaddr_in adrloc;
 
-	if((scon=socket(AF_INET,SOCK_STREAM,0))==-1) {
+	if((sock=socket(AF_INET,SOCK_STREAM,0))==-1) {
         return -1;
     } else {
-        adrloc.sin_family=AF_INET;
-        adrloc.sin_port=htons(portTCPloc);
-        adrloc.sin_addr.s_addr=inet_addr(IPloc);
-        for(i=0;i<8;i++){adrloc.sin_zero[i]='\0';}
-
-        if((bind(scon, (struct sockaddr*)&adrloc, sizeof(adrloc)))==-1) {
+        adrloc = crearsockaddr(IPloc, portTCPloc);
+        
+        if((bind(sock, (struct sockaddr*)&adrloc, sizeof(adrloc)))==-1) {
             return -1;
-            close(scon);
         } else {
-            return scon;
+            return sock;
         }
     }
 }

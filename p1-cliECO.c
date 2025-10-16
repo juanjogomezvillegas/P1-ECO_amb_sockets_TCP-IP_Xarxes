@@ -1,14 +1,15 @@
-/**************************************************************************/
-/*                                                                        */
-/* L'aplicació ECO amb sockets TCP/IP                                     */
-/* Fitxer cliECO.c que implementa el client ECO sobre la capa de          */
-/* transport TCP (fent crides a la "nova" interfície de la capa de        */
-/* transport o "nova" interfície de sockets).                             */
-/*                                                                        */
-/* Autors:                                                                */
-/* Data:                                                                  */
-/*                                                                        */
-/**************************************************************************/
+/*******************************************************************************/
+/*                                                                             */
+/* L'aplicació ECO amb sockets TCP/IP                                          */
+/* Fitxer cliECO.c que implementa el client ECO sobre la capa de               */
+/* transport TCP (fent crides a la "nova" interfície de la capa de             */
+/* transport o "nova" interfície de sockets).                                  */
+/*                                                                             */
+/* Autors: Juan José Gómez Villegas, u1987338, u1987338@campus.udg.edu, GEINF  */
+/*         Martí Valverde Rodríguez, u1994928, u1994928@campus.udg.edu, GEINF  */
+/* Data: 10 d'octubre de 2025                                                  */
+/*                                                                             */
+/*******************************************************************************/
 
 /* Inclusió de llibreries, p.e. #include <stdio.h> o #include "meu.h"     */
 
@@ -22,100 +23,119 @@
 /* Declaració de funcions INTERNES que es fan servir en aquest fitxer     */
 /* (les  definicions d'aquestes funcions es troben més avall) per així    */
 /* fer-les conegudes des d'aquí fins al final d'aquest fitxer, p.e.,      */
-
-/* int FuncioInterna(arg1, arg2...);                                      */
 bool strIsEqual(char s1[], char s2[]);
 void AskIpAddr(char* ip);
 void AskPort(int* port);
-char* printError(int* codiRes);
+void Tanca(Sck);
+void printError(int* codiRes);
+void exitError(int codiRes);
 
 int main(int argc,char *argv[])
 {
     /* Declaració de variables, p.e., int n;                                 */
-    int scon, i;
+    bool errorS;
+    int i, scon;
     int bytes_llegits, bytes_escrits;
     char buffer[200];
     char iprem[16];
     int portrem;
-    char iploc[16] = "192.168.0.17";
-    int portloc = 3000;
+    char iploc[16] = "0.0.0.0";
+    int portloc = 0;
 
     /* Expressions, estructures de control, crides a funcions, etc.          */
+
+    /* Es crea el socket scon del client (el socket "local")                 */
+    /* Amb una @IP i un #Port assignats.                                     */
     if ((scon = TCP_CreaSockClient(iploc, &portloc)) == -1) {
-        TCP_TancaSock(scon);
-        exit(-1);
+        exitError(scon);
     }
 
-    while (!(strIsEqual(buffer, "n\n"))) {
+    while (!(strIsEqual(buffer, "no\n"))) {
 
+        /* Demana a l'usuari l'adreça IP i Port del servidor al que es vol connectar.  */
         AskIpAddr(iprem);
         AskPort(&portrem);
 
-        if (TCP_DemanaConnexio(scon, iprem, &portrem) == -1) {
-            TCP_TancaSock(scon);
-            exit(-1);
+        /* Es connecta scon al socket del servidor (el socket “remot”).                */
+        if ((i = TCP_DemanaConnexio(scon, iprem, &portrem)) == -1) {
+            Tanca(scon);
+            exitError(i);
         }
 
+        /* Obté i mostra l'adreça del socket local                                          */
+        if ((i = TCP_TrobaAdrSockLoc(scon, iploc, portloc)) == -1) {
+            Tanca(scon);
+            exitError(i);
+        }
+        printf("socket local: IP=%s;Port=%d\n", iploc, portloc);
+        /* Obté i mostra l'adreça del socket remot                                          */
+        if ((i = TCP_TrobaAdrSockRem(scon, iprem, portrem)) == -1) {
+            Tanca(scon);
+            exitError(i);
+        }
+        printf("socket remot: IP=%s;Port=%d\n", iprem, portrem);
+
+        /* Un cop s'ha establert la connexió TCP entre el C i el S, l'usuari entra frases   */
+        /* que s'enviaran al S, i després el C rebrà l'ECO que es mostrarà per pantalla.    */
+        /* L'entrada de frases i la connexió amb el S acabarà amb la paraula: FI.           */
         printf("Entra frases (per desconnectar-te del servidor remot entra FI):\n");
 
-        while (!(strIsEqual(buffer, "FI\n"))) {
-            if((bytes_llegits=read(0,buffer,200))==-1) {
-                perror("Error en read");
-                TCP_TancaSock(scon);
-                exit(-1);
+        errorS = false;
+        while (!(strIsEqual(buffer, "FI\n")) && !(errorS)) {
+            /* L'usuari entra una frase per pantalla.                                        */
+            if ((bytes_llegits = TCP_Rep(0, buffer, 200)) == -1) {
+                Tanca(scon);
+                exitError(bytes_llegits);
             }
 
-            buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo
+            buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo.
 
-            if((bytes_escrits=TCP_Envia(scon,buffer,bytes_llegits))==-1) {
-                perror("Error en write");
-                close(scon);
-                exit(-1);
-            }
+            if (!(strIsEqual(buffer, "FI\n"))) { // si l'usuari no ha entrat FI
+                /* El C envia la frase al S, a través del socket scon.                        */
+                if ((bytes_escrits = TCP_Envia(scon, buffer, bytes_llegits)) == -1) {
+                    Tanca(scon);
+                    exitError(bytes_escrits);
+                }
 
-            if (!(strIsEqual(buffer, "FI\n"))) {
-                if((bytes_llegits=TCP_Rep(scon,buffer,bytes_llegits))==-1) {
-                    perror("Error en read ECO");
-                    close(scon);
-                    exit(-1);
+                /* Es mostren els bytes enviats.                                               */
+                printf("bytes enviats: %d\n", bytes_escrits);
+                
+                /* A continuació, el C rep l'ECO del S i el mostra per pantalla.               */
+                if ((bytes_llegits = TCP_Rep(scon, buffer, bytes_escrits)) == -1) {
+                    Tanca(scon);
+                    exitError(bytes_llegits);
+                } else if (bytes_llegits == 0) { // Si el C rep la desconnexió del servidor surt del bucle.
+                    errorS = true;
+                    Tanca(scon);
+                    perror("S desconnectat");
                 }
-                if((bytes_escrits=write(1,buffer,bytes_llegits))==-1) {
-                    perror("Error en write ECO");
-                    close(scon);
-                    exit(-1);
+
+                if ((bytes_escrits = TCP_Envia(1, buffer, bytes_llegits)) == -1) {
+                    Tanca(scon);
+                    exitError(bytes_escrits);
                 }
+            } else { // Si l'usuari ha entrat FI, el C es desconnecta (surt del bucle).
+                Tanca(scon);
             }
         }
 
-        // demana a l'usuari si vol continuar amb la situació inicial (tornar-se a connectar a un altre servidor).
-        printf("Vols tornar a connectar-te a un altre servidor (s|n)?\n");
+        /* Demana a l'usuari si vol continuar amb la situació inicial, és a dir,                 */
+        /* si es vol tornar a connectar a un altre servidor.                                     */
+        printf("\nVols tornar a connectar-te a un altre servidor (si|no)?\n");
 
-        if((bytes_llegits=read(0,buffer,200)) == -1) {
-            perror("Error en read");
-            close(scon);
-            exit(-1);
+        if ((bytes_llegits = (0, buffer, 200)) == -1) {
+            exitError(bytes_llegits);
         }
 
-        buffer[bytes_llegits] = '\0';
+        buffer[bytes_llegits] = '\0'; // inserció del caràcter null al buffer per poder comparar-lo.
     }
     
-    if(TCP_TancaSock(scon) == -1) {
-        perror("Error en close");
-        exit(-1);
-    }
-
     exit(0);
 }
 
 /* Definició de funcions INTERNES, és a dir, d'aquelles que es faran      */
 /* servir només en aquest mateix fitxer. Les seves declaracions es troben */
 /* a l'inici d'aquest fitxer.                                             */
-
-/* Descripció de la funció, dels arguments, valors de retorn, etc.        */
-/*int FuncioInterna(arg1, arg2...)
-{
-	
-} */
 bool strIsEqual(char s1[], char s2[]) {
 	return strcmp(s1, s2) == 0;
 }
@@ -130,6 +150,19 @@ void AskPort(int* port) {
     scanf("%d", port);
 }
 
-char* printError(int* codiRes) {
-    return "Error: %s\n", T_ObteTextRes(&codiRes);
+void Tanca(Sck) {
+    int i;
+
+    if ((i = TCP_TancaSock(Sck)) == -1) {
+        exitError(i);
+    }
+}
+
+void printError(int* codiRes) {
+    printf("Error: %s\n", T_ObteTextRes(&codiRes));
+}
+
+void exitError(int codiRes) {
+    printError(codiRes);
+    exit(-1);
 }
