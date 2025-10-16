@@ -19,6 +19,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <signal.h>
+
+int sesc, scon;
 
 bool strIsEqual(char s1[], char s2[]) {
 	return strcmp(s1, s2) == 0;
@@ -29,12 +32,31 @@ void AskPort(int* port) {
     scanf("%d", port);
 }
 
+void handler_sigint(int signal) {
+   printf("\nS'ha detectat el senyal Control+c. Es procedeix al tancament dels recursos oberts...\n");
+
+   if (sesc != -1) {
+      close(sesc);
+      printf("\n... tancant socket d'escolta...\n");
+   }
+   if (scon != -1) {
+      close(scon);
+      printf("\n... tancant socket de connexió...\n");
+   }
+
+   printf("\nFI del programa.\n");
+
+   exit(0);
+}
+
 int main(int argc,char *argv[])
 {
- int sesc, scon, i;
+ signal(SIGINT, handler_sigint);
+
+ int i;
  int bytes_llegits, bytes_escrits;
  char buffer[200];
- socklen_t long_adrrem;
+ socklen_t long_adrrem, long_adrloc;
  struct sockaddr_in adrloc, adrrem;
  char iploc[16];
  int portloc;
@@ -108,8 +130,30 @@ int main(int argc,char *argv[])
    exit(-1);
    }
 
-   printf("\nSocket local: IP=%s;Port=%d", inet_ntoa(adrloc.sin_addr), ntohs(adrloc.sin_port));
-   printf("\nSocket remot: IP=%s;Port=%d\n", inet_ntoa(adrrem.sin_addr), ntohs(adrrem.sin_port));
+
+   // obtenir l'adreça del socket local
+   long_adrloc = sizeof(adrloc);
+   if (getsockname(scon, (struct sockaddr*)&adrloc, &long_adrloc) == -1) {
+      perror("Error en sockname");
+      close(sesc);
+      close(sesc);
+      exit(-1);
+   }
+   char* ip = inet_ntoa(adrloc.sin_addr);
+   int port = ntohs(adrloc.sin_port);
+   printf("socket local: IP=%s;Port=%d\n", ip, port);
+   // obtenir l'adreça del socket remot
+   long_adrrem = sizeof(adrrem);
+   if (getpeername(scon, (struct sockaddr*)&adrrem, &long_adrrem) == -1) {
+      perror("Error en sockname");
+      close(scon);
+      close(sesc);
+      exit(-1);
+   }
+   char* ip2 = inet_ntoa(adrrem.sin_addr);
+   int port2 = ntohs(adrrem.sin_port);
+   printf("socket remot: IP=%s;Port=%d\n", ip2, port2);
+
 
    /* Ara adrrem conté l'adreça del socket remot (@IP i #port TCP).                        */
    /* 5) Crida read()                                                                      */

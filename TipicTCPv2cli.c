@@ -39,6 +39,7 @@ int main(int argc,char *argv[])
  int scon, i;
  int bytes_llegits, bytes_escrits;
  char buffer[200];
+ socklen_t long_sockloc, long_sockrem;
  struct sockaddr_in adrloc, adrrem;
  char iploc[16], iprem[16];
  int portloc, portrem;
@@ -111,8 +112,28 @@ int main(int argc,char *argv[])
     exit(-1);
     }
 
-    printf("\nSocket local: IP=%s;Port=%d", inet_ntoa(adrloc.sin_addr), ntohs(adrloc.sin_port));
-    printf("\nSocket remot: IP=%s;Port=%d\n", inet_ntoa(adrrem.sin_addr), ntohs(adrrem.sin_port));
+
+    // obtenir l'adreça del socket local
+    long_sockloc = sizeof(adrloc);
+    if (getsockname(scon, (struct sockaddr*)&adrloc, &long_sockloc) == -1) {
+        perror("Error en sockname");
+        close(scon);
+        exit(-1);
+    }
+    char* ip = inet_ntoa(adrloc.sin_addr);
+    int port = ntohs(adrloc.sin_port);
+    printf("socket local: IP=%s;Port=%d\n", ip, port);
+    // obtenir l'adreça del socket remot
+    long_sockrem = sizeof(adrrem);
+    if (getpeername(scon, (struct sockaddr*)&adrrem, &long_sockrem) == -1) {
+        perror("Error en sockname");
+        close(scon);
+        exit(-1);
+    }
+    char* ip2 = inet_ntoa(adrrem.sin_addr);
+    int port2 = ntohs(adrrem.sin_port);
+    printf("socket remot: IP=%s;Port=%d\n", ip2, port2);
+
 
     /* Un cop fet connect() es diu que el socket scon està "connectat" al socket remot.     */
     /* Com que és un socket TCP això també vol dir que s'ha establert una connexió TCP.     */
