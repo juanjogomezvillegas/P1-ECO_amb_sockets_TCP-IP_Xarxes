@@ -15,6 +15,9 @@
 
 #include "p1-tTCP.h"
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Definició de constants, p.e.,                                          */
 
@@ -26,7 +29,7 @@
 bool strIsEqual(char s1[], char s2[]);
 void AskIpAddr(char* ip);
 void AskPort(int* port);
-void Tanca(Sck);
+void Tanca(int Sck);
 void printError(int* codiRes);
 void exitError(int codiRes);
 
@@ -46,7 +49,7 @@ int main(int argc,char *argv[])
 
     /* Es crea el socket scon del client (el socket "local")                 */
     /* Amb una @IP i un #Port assignats.                                     */
-    if ((scon = TCP_CreaSockClient(iploc, &portloc)) == -1) {
+    if ((scon = TCP_CreaSockClient(iploc, portloc)) == -1) {
         exitError(scon);
     }
 
@@ -57,19 +60,19 @@ int main(int argc,char *argv[])
         AskPort(&portrem);
 
         /* Es connecta scon al socket del servidor (el socket “remot”).                */
-        if ((i = TCP_DemanaConnexio(scon, iprem, &portrem)) == -1) {
+        if ((i = TCP_DemanaConnexio(scon, iprem, portrem)) == -1) {
             Tanca(scon);
             exitError(i);
         }
 
         /* Obté i mostra l'adreça del socket local                                          */
-        if ((i = TCP_TrobaAdrSockLoc(scon, iploc, portloc)) == -1) {
+        if ((i = TCP_TrobaAdrSockLoc(scon, iploc, &portloc)) == -1) {
             Tanca(scon);
             exitError(i);
         }
         printf("socket local: IP=%s;Port=%d\n", iploc, portloc);
         /* Obté i mostra l'adreça del socket remot                                          */
-        if ((i = TCP_TrobaAdrSockRem(scon, iprem, portrem)) == -1) {
+        if ((i = TCP_TrobaAdrSockRem(scon, iprem, &portrem)) == -1) {
             Tanca(scon);
             exitError(i);
         }
@@ -107,7 +110,7 @@ int main(int argc,char *argv[])
                 } else if (bytes_llegits == 0) { // Si el C rep la desconnexió del servidor surt del bucle.
                     errorS = true;
                     Tanca(scon);
-                    perror("S desconnectat");
+                    printf("S desconnectat\n");
                 }
 
                 if ((bytes_escrits = TCP_Envia(1, buffer, bytes_llegits)) == -1) {
@@ -150,7 +153,7 @@ void AskPort(int* port) {
     scanf("%d", port);
 }
 
-void Tanca(Sck) {
+void Tanca(int Sck) {
     int i;
 
     if ((i = TCP_TancaSock(Sck)) == -1) {
@@ -159,10 +162,10 @@ void Tanca(Sck) {
 }
 
 void printError(int* codiRes) {
-    printf("Error: %s\n", T_ObteTextRes(&codiRes));
+    printf("Error: %s\n", T_ObteTextRes(codiRes));
 }
 
 void exitError(int codiRes) {
-    printError(codiRes);
+    printError(&codiRes);
     exit(-1);
 }

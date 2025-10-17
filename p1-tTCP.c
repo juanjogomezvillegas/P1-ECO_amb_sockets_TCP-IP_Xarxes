@@ -54,7 +54,7 @@ int crearSocket(const char *IPloc, int portTCPloc);
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 {
-    return crearSocket(IPloc, &portTCPloc);
+    return crearSocket(IPloc, portTCPloc);
 }
 
 /* Crea un socket TCP “servidor” (o en estat d’escolta – listen –) a      */
@@ -72,7 +72,7 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 {
 	int sock;
 
-    if ((sock = crearSocket(IPloc, &portTCPloc)) == -1) {
+    if ((sock = crearSocket(IPloc, portTCPloc)) == -1) {
         return -1;
     } else {
         if ((listen(sock,3))==-1) {
@@ -126,9 +126,10 @@ int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 {
 	int i, scon;
-    struct sockaddr_in adrrem = crearsockaddr(IPrem, portTCPrem);
+    struct sockaddr_in adrrem = crearsockaddr(IPrem, *portTCPrem);
+    socklen_t adrrem_len = sizeof(adrrem);
 
-    if ((scon=accept(Sck,(struct sockaddr*)&adrrem, sizeof(adrrem)))==-1) {
+    if ((scon=accept(Sck,(struct sockaddr*)&adrrem, &adrrem_len))==-1) {
         return -1;
     }
     
@@ -211,13 +212,14 @@ int TCP_TancaSock(int Sck)
 int TCP_TrobaAdrSockLoc(int Sck, char *IPloc, int *portTCPloc)
 {
     struct sockaddr_in adrloc;
+    socklen_t adrloc_len = sizeof(adrloc);
     
-    if (getsockname(Sck, (struct sockaddr*)&adrloc, sizeof(adrloc)) == -1) {
+    if (getsockname(Sck, (struct sockaddr*)&adrloc, &adrloc_len) == -1) {
         return -1;
     }
 
     IPloc = inet_ntoa(adrloc.sin_addr);
-    portTCPloc = ntohs(adrloc.sin_port);
+    *portTCPloc = ntohs(adrloc.sin_port);
 
     return 0;
 }
@@ -235,13 +237,14 @@ int TCP_TrobaAdrSockLoc(int Sck, char *IPloc, int *portTCPloc)
 int TCP_TrobaAdrSockRem(int Sck, char *IPrem, int *portTCPrem)
 {
 	struct sockaddr_in adrrem;
+    socklen_t adrrem_len = sizeof(adrrem);
     
-    if (getpeername(Sck, (struct sockaddr*)&adrrem, sizeof(adrrem)) == -1) {
+    if (getpeername(Sck, (struct sockaddr*)&adrrem, &adrrem_len) == -1) {
         return -1;
     }
 
     IPrem = inet_ntoa(adrrem.sin_addr);
-    portTCPrem = ntohs(adrrem.sin_port);
+    *portTCPrem = ntohs(adrrem.sin_port);
 
     return 0;
 }

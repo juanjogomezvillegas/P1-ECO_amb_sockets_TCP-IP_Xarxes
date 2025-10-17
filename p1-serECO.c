@@ -15,6 +15,8 @@
 
 #include "p1-tTCP.h"
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 
@@ -28,8 +30,8 @@
 void aturadaS(int signal);
 bool strIsEqual(char s1[], char s2[]);
 void AskPort(int* port);
-void Tanca(Sck);
-void exitError(int* codiRes);
+void Tanca(int Sck);
+void exitError(int codiRes);
 
 int main(int argc,char *argv[])
 {
@@ -51,9 +53,9 @@ int main(int argc,char *argv[])
 
     /* Es crea el socket sesc del servidor (el socket "local")               */
     /* Amb una @IP i un #Port assignats, i ja en estat de LISTEN (escolta)   */
-    if ((sesc = TCP_CreaSockServidor(iploc, &portloc)) == -1) {
+    if ((sesc = TCP_CreaSockServidor(iploc, portloc)) == -1) {
         Tanca(sesc);
-        exitError(&sesc);
+        exitError(sesc);
     }
 
     for (;;) {
@@ -64,21 +66,21 @@ int main(int argc,char *argv[])
         /*"connectat".                                                                      */
         if ((scon = TCP_AcceptaConnexio(sesc, iploc, &portloc)) == -1) {
             Tanca(sesc);
-            exitError(&scon);
+            exitError(scon);
         }
 
         /* Obté i mostra l'adreça del socket local                                          */
-        if ((i = TCP_TrobaAdrSockLoc(scon, iploc, portloc)) == -1) {
+        if ((i = TCP_TrobaAdrSockLoc(scon, iploc, &portloc)) == -1) {
             Tanca(sesc);
             Tanca(scon);
-            exitError(&i);
+            exitError(i);
         }
         printf("socket local: IP=%s;Port=%d\n", iploc, portloc);
         /* Obté i mostra l'adreça del socket remot                                          */
-        if ((i = TCP_TrobaAdrSockRem(scon, iprem, portrem)) == -1) {
+        if ((i = TCP_TrobaAdrSockRem(scon, iprem, &portrem)) == -1) {
             Tanca(sesc);
             Tanca(scon);
-            exitError(&i);
+            exitError(i);
         }
         printf("socket remot: IP=%s;Port=%d\n", iprem, portrem);
 
@@ -89,7 +91,7 @@ int main(int argc,char *argv[])
             if ((bytes_llegits = TCP_Rep(scon, buffer, 200)) == -1) {
                 Tanca(sesc);
                 Tanca(scon);
-                exitError(&bytes_llegits);
+                exitError(bytes_llegits);
             }
 
             if (bytes_llegits > 0) {
@@ -97,7 +99,7 @@ int main(int argc,char *argv[])
                 if ((bytes_escrits = (1, buffer, bytes_llegits)) == -1) {
                     Tanca(sesc);
                     Tanca(scon);
-                    exitError(&bytes_escrits);
+                    exitError(bytes_escrits);
                 }
 
                 /* Es mostren els bytes rebuts                                                 */
@@ -107,11 +109,11 @@ int main(int argc,char *argv[])
                 if ((bytes_escrits = (scon, buffer, bytes_llegits)) == -1) {
                     Tanca(sesc);
                     Tanca(scon);
-                    exitError(&bytes_escrits);
+                    exitError(bytes_escrits);
                 }
             } else {
                 /* Si el C es desconnecta, el S ho detecta i torna a escoltar altres peticions  */
-                printError("C desconnectat");
+                printf("C desconnectat\n");
             }
         }
     }
@@ -142,7 +144,7 @@ void AskPort(int* port) {
     scanf("%d", port);
 }
 
-void Tanca(Sck) {
+void Tanca(int Sck) {
     int i;
 
     if ((i = TCP_TancaSock(Sck)) == -1) {
@@ -150,7 +152,7 @@ void Tanca(Sck) {
     }
 }
 
-void exitError(int* codiRes) {
+void exitError(int codiRes) {
     printf("Error: %s\n", T_ObteTextRes(&codiRes));
     exit(-1);
 }
