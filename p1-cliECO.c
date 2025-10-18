@@ -53,7 +53,7 @@ int main(int argc,char *argv[])
         exitError(scon);
     }
 
-    while (!(strIsEqual(buffer, "no\n"))) {
+    while (!(strIsEqual(buffer, "n\n"))) {
 
         /* Demana a l'usuari l'adreça IP i Port del servidor al que es vol connectar.  */
         AskIpAddr(iprem);
@@ -70,7 +70,7 @@ int main(int argc,char *argv[])
             Tanca(scon);
             exitError(i);
         }
-        printf("socket local: IP=%s;Port=%d\n", iploc, portloc);
+        printf("\nsocket local: IP=%s;Port=%d\n", iploc, portloc);
         /* Obté i mostra l'adreça del socket remot                                          */
         if ((i = TCP_TrobaAdrSockRem(scon, iprem, &portrem)) == -1) {
             Tanca(scon);
@@ -81,7 +81,7 @@ int main(int argc,char *argv[])
         /* Un cop s'ha establert la connexió TCP entre el C i el S, l'usuari entra frases   */
         /* que s'enviaran al S, i després el C rebrà l'ECO que es mostrarà per pantalla.    */
         /* L'entrada de frases i la connexió amb el S acabarà amb la paraula: FI.           */
-        printf("Entra frases (per desconnectar-te del servidor remot entra FI):\n");
+        printf("\nEntra frases (per desconnectar-te del servidor remot entra FI):\n");
 
         errorS = false;
         while (!(strIsEqual(buffer, "FI\n")) && !(errorS)) {
@@ -110,7 +110,7 @@ int main(int argc,char *argv[])
                 } else if (bytes_llegits == 0) { // Si el C rep la desconnexió del servidor surt del bucle.
                     errorS = true;
                     Tanca(scon);
-                    printf("S desconnectat\n");
+                    printf("\nS desconnectat\n");
                 }
 
                 if ((bytes_escrits = TCP_Envia(1, buffer, bytes_llegits)) == -1) {
@@ -123,10 +123,12 @@ int main(int argc,char *argv[])
         }
 
         /* Demana a l'usuari si vol continuar amb la situació inicial, és a dir,                 */
-        /* si es vol tornar a connectar a un altre servidor.                                     */
-        printf("\nVols tornar a connectar-te a un altre servidor (si|no)?\n");
+        /* si es vol tornar a connectar a un altre servidor. L'usuari pot respondre:             */
+        /*    s -> l'usuari vol tornar-se a connnectar i torna a demanar la ip i port remots.    */
+        /*    n -> l'usuari no vol tornar-se a connnectar, i s'atura el programa.                */
+        printf("\nVols tornar a connectar-te a un altre servidor (s|n)?\n");
 
-        if ((bytes_llegits = (0, buffer, 200)) == -1) {
+        if ((bytes_llegits = TCP_Rep(0, buffer, 200)) == -1) {
             exitError(bytes_llegits);
         }
 

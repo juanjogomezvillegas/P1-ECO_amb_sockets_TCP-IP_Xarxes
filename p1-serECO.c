@@ -75,14 +75,14 @@ int main(int argc,char *argv[])
             Tanca(scon);
             exitError(i);
         }
-        printf("socket local: IP=%s;Port=%d\n", iploc, portloc);
+        printf("\nsocket local: IP=%s;Port=%d\n", iploc, portloc);
         /* Obté i mostra l'adreça del socket remot                                          */
         if ((i = TCP_TrobaAdrSockRem(scon, iprem, &portrem)) == -1) {
             Tanca(sesc);
             Tanca(scon);
             exitError(i);
         }
-        printf("socket remot: IP=%s;Port=%d\n", iprem, portrem);
+        printf("socket remot: IP=%s;Port=%d\n\n", iprem, portrem);
 
         /* A continuació, s'escriu a la pantalla el que rep per scon, i l'envia a C          */
         bytes_llegits = 1;
@@ -96,7 +96,7 @@ int main(int argc,char *argv[])
 
             if (bytes_llegits > 0) {
                 /* Si el C encara respon, es mostra la frase per pantalla                     */
-                if ((bytes_escrits = (1, buffer, bytes_llegits)) == -1) {
+                if ((bytes_escrits = TCP_Envia(1, buffer, bytes_llegits)) == -1) {
                     Tanca(sesc);
                     Tanca(scon);
                     exitError(bytes_escrits);
@@ -106,14 +106,14 @@ int main(int argc,char *argv[])
                 printf("bytes rebuts: %d\n", bytes_llegits);
 
                 /* Es propaga l'ECO de la frase rebuda cap el C, fent servir el socket scon    */
-                if ((bytes_escrits = (scon, buffer, bytes_llegits)) == -1) {
+                if ((bytes_escrits = TCP_Envia(scon, buffer, bytes_llegits)) == -1) {
                     Tanca(sesc);
                     Tanca(scon);
                     exitError(bytes_escrits);
                 }
             } else {
                 /* Si el C es desconnecta, el S ho detecta i torna a escoltar altres peticions  */
-                printf("C desconnectat\n");
+                printf("\nC desconnectat\n");
             }
         }
     }

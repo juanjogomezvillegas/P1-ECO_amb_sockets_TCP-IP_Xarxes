@@ -33,8 +33,8 @@
 /* Declaració de funcions INTERNES que es fan servir en aquest fitxer     */
 /* (les  definicions d'aquestes funcions es troben més avall) per així    */
 /* fer-les conegudes des d'aquí fins al final d'aquest fitxer, p.e.,      */
-struct sockaddr_in crearsockaddr(const char *IPloc, int portTCPloc);
-int crearSocket(const char *IPloc, int portTCPloc);
+struct sockaddr_in crearsockaddr(const char *IPloc, int* portTCPloc);
+int crearSocket(const char *IPloc, int* portTCPloc);
 
 /* Definició de funcions EXTERNES, és a dir, d'aquelles que es cridaran   */
 /* des d'altres fitxers, p.e., int TCP_FuncioExterna(arg1, arg2...) { }   */
@@ -54,7 +54,7 @@ int crearSocket(const char *IPloc, int portTCPloc);
 /* -1 si hi ha error.                                                     */
 int TCP_CreaSockClient(const char *IPloc, int portTCPloc)
 {
-    return crearSocket(IPloc, portTCPloc);
+    return crearSocket(IPloc, &portTCPloc);
 }
 
 /* Crea un socket TCP “servidor” (o en estat d’escolta – listen –) a      */
@@ -72,7 +72,7 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 {
 	int sock;
 
-    if ((sock = crearSocket(IPloc, portTCPloc)) == -1) {
+    if ((sock = crearSocket(IPloc, &portTCPloc)) == -1) {
         return -1;
     } else {
         if ((listen(sock,3))==-1) {
@@ -98,7 +98,7 @@ int TCP_CreaSockServidor(const char *IPloc, int portTCPloc)
 /* -1 si hi ha error.                                                     */
 int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 {
-    struct sockaddr_in adrrem = crearsockaddr(IPrem, portTCPrem);
+    struct sockaddr_in adrrem = crearsockaddr(IPrem, &portTCPrem);
     
     if (connect(Sck, (struct sockaddr*)&adrrem, sizeof(adrrem)) == -1) {
         return -1;
@@ -126,7 +126,7 @@ int TCP_DemanaConnexio(int Sck, const char *IPrem, int portTCPrem)
 int TCP_AcceptaConnexio(int Sck, char *IPrem, int *portTCPrem)
 {
 	int i, scon;
-    struct sockaddr_in adrrem = crearsockaddr(IPrem, *portTCPrem);
+    struct sockaddr_in adrrem = crearsockaddr(IPrem, portTCPrem);
     socklen_t adrrem_len = sizeof(adrrem);
 
     if ((scon=accept(Sck,(struct sockaddr*)&adrrem, &adrrem_len))==-1) {
@@ -218,7 +218,7 @@ int TCP_TrobaAdrSockLoc(int Sck, char *IPloc, int *portTCPloc)
         return -1;
     }
 
-    IPloc = inet_ntoa(adrloc.sin_addr);
+    strcpy(IPloc, inet_ntoa(adrloc.sin_addr));
     *portTCPloc = ntohs(adrloc.sin_port);
 
     return 0;
@@ -243,7 +243,7 @@ int TCP_TrobaAdrSockRem(int Sck, char *IPrem, int *portTCPrem)
         return -1;
     }
 
-    IPrem = inet_ntoa(adrrem.sin_addr);
+    strcpy(IPrem, inet_ntoa(adrrem.sin_addr));
     *portTCPrem = ntohs(adrrem.sin_port);
 
     return 0;
@@ -269,18 +269,18 @@ char* T_ObteTextRes(int *CodiRes)
 /* a l'inici d'aquest fitxer.                                             */
 
 /* Descripció de la funció, dels arguments, valors de retorn, etc.        */
-struct sockaddr_in crearsockaddr(const char *IPloc, int portTCPloc) {
+struct sockaddr_in crearsockaddr(const char *IPloc, int* portTCPloc) {
     int i;
     struct sockaddr_in addr;
     addr.sin_family=AF_INET;
-    addr.sin_port=htons(portTCPloc);
+    addr.sin_port=htons(*portTCPloc);
     addr.sin_addr.s_addr=inet_addr(IPloc);
     for(i=0;i<8;i++){addr.sin_zero[i]='\0';}
 
     return addr;
 }
 
-int crearSocket(const char *IPloc, int portTCPloc) {
+int crearSocket(const char *IPloc, int* portTCPloc) {
     int sock, i;
     struct sockaddr_in adrloc;
 
