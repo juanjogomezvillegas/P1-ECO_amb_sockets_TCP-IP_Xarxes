@@ -20,9 +20,12 @@
 #include <string.h>
 #include <signal.h>
 
-/* Definició de constants, p.e.,                                          */
+/* Definició de constants                                                 */
 
 /* #define XYZ       1500                                                 */
+
+/* Definició de variables globals                                         */
+int sesc, scon;
 
 /* Declaració de funcions INTERNES que es fan servir en aquest fitxer     */
 /* (les  definicions d'aquestes funcions es troben més avall) per així    */
@@ -39,7 +42,7 @@ int main(int argc,char *argv[])
     signal(SIGINT, aturadaS);
 
     /* Declaració de variables, p.e., int n;                                 */
-    int i, sesc, scon;
+    int i;
     int bytes_llegits, bytes_escrits;
     char buffer[200];
     char iploc[16] = "0.0.0.0";
@@ -128,7 +131,25 @@ int main(int argc,char *argv[])
 /* servir només en aquest mateix fitxer. Les seves declaracions es troben */
 /* a l'inici d'aquest fitxer.                                             */
 void aturadaS(int signal) {
+    int i;
+
     printf("\nS'ha detectat el senyal Control+c. Espera un moment...\n");
+
+    if (sesc >= 0) { // Si sesc està obert el tanca
+        if ((i == TCP_TancaSock(sesc)) == -1) {
+            exitError(i);
+        }
+
+        printf("socket d'escolta tancat correctament...\n");
+    }
+
+    if (scon >= 0) { // Si scon està obert el tanca
+        if ((i == TCP_TancaSock(scon)) == -1) {
+            exitError(i);
+        }
+
+        printf("socket de connexió TCP tancat correctament...\n");
+    }
 
     printf("\nFI del programa.\n");
     
