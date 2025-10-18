@@ -86,7 +86,7 @@ int main(int argc,char *argv[])
         errorS = false;
         while (!(strIsEqual(buffer, "FI\n")) && !(errorS)) {
             /* L'usuari entra una frase per pantalla.                                        */
-            if ((bytes_llegits = TCP_Rep(0, buffer, 200)) == -1) {
+            if ((bytes_llegits = read(0, buffer, 200)) == -1) {
                 Tanca(scon);
                 exitError(bytes_llegits);
             }
@@ -113,7 +113,7 @@ int main(int argc,char *argv[])
                     printf("\nS desconnectat\n");
                 }
 
-                if ((bytes_escrits = TCP_Envia(1, buffer, bytes_llegits)) == -1) {
+                if ((bytes_escrits = write(1, buffer, bytes_llegits)) == -1) {
                     Tanca(scon);
                     exitError(bytes_escrits);
                 }

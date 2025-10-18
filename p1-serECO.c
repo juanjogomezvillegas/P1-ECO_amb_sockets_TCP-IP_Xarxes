@@ -96,7 +96,7 @@ int main(int argc,char *argv[])
 
             if (bytes_llegits > 0) {
                 /* Si el C encara respon, es mostra la frase per pantalla                     */
-                if ((bytes_escrits = TCP_Envia(1, buffer, bytes_llegits)) == -1) {
+                if ((bytes_escrits = write(1, buffer, bytes_llegits)) == -1) {
                     Tanca(sesc);
                     Tanca(scon);
                     exitError(bytes_escrits);
