@@ -269,6 +269,12 @@ char* T_ObteTextRes(int *CodiRes)
 /* a l'inici d'aquest fitxer.                                             */
 
 /* Descripció de la funció, dels arguments, valors de retorn, etc.        */
+
+/* Crear l'struct que es fa servir més d'un cop en el codi del C i S      */
+/* típics, i evita la repetició de codi. No comprova errors.              */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  struct addr preparat per les crides accept, connect, etc ...          */
 struct sockaddr_in crearsockaddr(const char *IPloc, int* portTCPloc) {
     int i;
     struct sockaddr_in addr;
@@ -280,6 +286,17 @@ struct sockaddr_in crearsockaddr(const char *IPloc, int* portTCPloc) {
     return addr;
 }
 
+/* Crea un socket TCP amb la crida socket, i ho lliga amb una adreça IP  */
+/* i un port TCP amb la crida bind, d'aquesta manera, s'evita la         */
+/* repetició de codi en les funcions de crearSocket client i servidor.   */
+/*                                                                        */
+/* "IPloc" és un "string" de C (vector de chars imprimibles acabat en     */
+/* '\0') d'una longitud màxima de 16 chars (incloent '\0').               */
+/* I "portTCPloc" és un punter a enter.                                   */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  l'identificador del socket creat si tot va bé;                        */
+/* -1 si hi ha error.                                                     */
 int crearSocket(const char *IPloc, int* portTCPloc) {
     int sock, i;
     struct sockaddr_in adrloc;

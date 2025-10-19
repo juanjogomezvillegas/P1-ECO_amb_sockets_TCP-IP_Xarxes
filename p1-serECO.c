@@ -22,8 +22,6 @@
 
 /* Definició de constants                                                 */
 
-/* #define XYZ       1500                                                 */
-
 /* Definició de variables globals                                         */
 int sesc, scon;
 
@@ -72,7 +70,7 @@ int main(int argc,char *argv[])
             exitError(scon);
         }
 
-        /* Obté i mostra l'adreça del socket local                                          */
+        /* Obté i mostra l'adreça del socket local scon que és la mateixa que sesc.        */
         if ((i = TCP_TrobaAdrSockLoc(scon, iploc, &portloc)) == -1) {
             Tanca(sesc);
             Tanca(scon);
@@ -130,17 +128,23 @@ int main(int argc,char *argv[])
 /* Definició de funcions INTERNES, és a dir, d'aquelles que es faran      */
 /* servir només en aquest mateix fitxer. Les seves declaracions es troben */
 /* a l'inici d'aquest fitxer.                                             */
+
+/* funció que alliberarà els recursos oberts quan es detecti el signal    */
+/* CTRL+C.                                                                */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void aturadaS(int signal) {
     int i;
 
-    printf("\nS'ha detectat el senyal Control+c. Espera un moment...\n");
+    printf("\nS'ha detectat el senyal Control+c. Espera un moment...\n"); // informa a l'usuari per pantalla
 
     if (sesc >= 0) { // Si sesc està obert el tanca
         if ((i == TCP_TancaSock(sesc)) == -1) {
             exitError(i);
         }
 
-        printf("socket d'escolta tancat correctament...\n");
+        printf("socket d'escolta tancat correctament...\n"); // informa a l'usuari per pantalla
     }
 
     if (scon >= 0) { // Si scon està obert el tanca
@@ -148,23 +152,36 @@ void aturadaS(int signal) {
             exitError(i);
         }
 
-        printf("socket de connexió TCP tancat correctament...\n");
+        printf("socket de connexió TCP tancat correctament...\n"); // informa a l'usuari per pantalla
     }
 
-    printf("\nFI del programa.\n");
+    printf("\nFI del programa.\n"); // informa a l'usuari per pantalla de què s'ha aturat l'execució del S
     
     exit(0);
 }
 
+/* funció simple que serveix per comparar dues cadenes de caràcters.      */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  true, si s1 == s2, per tant, comparació == 0                          */
+/*  false, altrament, si s1 != s2, per tant, comparació != 0              */
 bool strIsEqual(char s1[], char s2[]) {
 	return strcmp(s1, s2) == 0;
 }
 
+/* funció que demana el port del socket a l'usuari.                       */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void AskPort(int* port) {
     printf("Entra el port des d'on escoltar peticions:\n");
     scanf("%d", port);
 }
 
+/* funció que tanca un socket entrat per paràmetre.                       */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void Tanca(int Sck) {
     int i;
 
@@ -173,6 +190,11 @@ void Tanca(int Sck) {
     }
 }
 
+/* funció que mostra l'error recuperat amb la funció T_ObteTextRes,       */
+/* de la nova llibreria de sockets TCP. I atura l'execució amb errors.    */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void exitError(int codiRes) {
     printf("Error: %s\n", T_ObteTextRes(&codiRes));
     exit(-1);

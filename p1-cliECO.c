@@ -21,8 +21,6 @@
 
 /* Definició de constants, p.e.,                                          */
 
-/* #define XYZ       1500                                                 */
-
 /* Declaració de funcions INTERNES que es fan servir en aquest fitxer     */
 /* (les  definicions d'aquestes funcions es troben més avall) per així    */
 /* fer-les conegudes des d'aquí fins al final d'aquest fitxer, p.e.,      */
@@ -30,7 +28,6 @@ bool strIsEqual(char s1[], char s2[]);
 void AskIpAddr(char* ip);
 void AskPort(int* port);
 void Tanca(int Sck);
-void printError(int* codiRes);
 void exitError(int codiRes);
 
 int main(int argc,char *argv[])
@@ -128,7 +125,7 @@ int main(int argc,char *argv[])
         /*    n -> l'usuari no vol tornar-se a connnectar, i s'atura el programa.                */
         printf("\nVols tornar a connectar-te a un altre servidor (s|n)?\n");
 
-        if ((bytes_llegits = TCP_Rep(0, buffer, 200)) == -1) {
+        if ((bytes_llegits = read(0, buffer, 200)) == -1) {
             exitError(bytes_llegits);
         }
 
@@ -141,20 +138,38 @@ int main(int argc,char *argv[])
 /* Definició de funcions INTERNES, és a dir, d'aquelles que es faran      */
 /* servir només en aquest mateix fitxer. Les seves declaracions es troben */
 /* a l'inici d'aquest fitxer.                                             */
+
+/* funció simple que serveix per comparar dues cadenes de caràcters.      */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  true, si s1 == s2, per tant, comparació == 0                          */
+/*  false, altrament, si s1 != s2, per tant, comparació != 0              */
 bool strIsEqual(char s1[], char s2[]) {
 	return strcmp(s1, s2) == 0;
 }
 
+/* funció que demana l'adreça IP del socket a l'usuari.                   */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void AskIpAddr(char* ip) {
     printf("Entra l'@IP remota:\n");
     scanf("%15s", ip);
 }
 
+/* funció que demana el port del socket a l'usuari.                       */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void AskPort(int* port) {
     printf("Entra el port remot:\n");
     scanf("%d", port);
 }
 
+/* funció que tanca un socket entrat per paràmetre.                       */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void Tanca(int Sck) {
     int i;
 
@@ -163,11 +178,12 @@ void Tanca(int Sck) {
     }
 }
 
-void printError(int* codiRes) {
-    printf("Error: %s\n", T_ObteTextRes(codiRes));
-}
-
+/* funció que mostra l'error recuperat amb la funció T_ObteTextRes,       */
+/* de la nova llibreria de sockets TCP. I atura l'execució amb errors.    */
+/*                                                                        */
+/* Retorna:                                                               */
+/*  void                                                                  */
 void exitError(int codiRes) {
-    printError(&codiRes);
+    printf("Error: %s\n", T_ObteTextRes(&codiRes));
     exit(-1);
 }
